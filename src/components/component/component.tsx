@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+export const BASE_URL = "http://localhost:8080";
+
 
 const Component = () => {
   const [brandNames, setBrandNames] = useState([]);
@@ -17,7 +19,7 @@ const Component = () => {
 
   // Fetch brand names from backend
   useEffect(() => {
-    fetch("http://localhost:8080/brandnames")
+    fetch(`${BASE_URL}/brandnames`)
       .then(response => response.json())
       .then(data => {
         setBrandNames(data.map(item => item.brandname));
@@ -30,7 +32,7 @@ const Component = () => {
   // Fetch course names based on selected brand name
   useEffect(() => {
     if (selectedBrandName) {
-      fetch(`http://localhost:8080/names/${selectedBrandName}`)
+      fetch(`${BASE_URL}/names/${selectedBrandName}`)
         .then(response => response.json())
         .then(data => {
           setCourseNames(data.map(item => ({ id: item.id, name: item.name })));
