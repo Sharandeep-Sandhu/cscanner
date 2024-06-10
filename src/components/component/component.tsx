@@ -11,27 +11,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const Component = () => {
+  const [brandNames, setBrandNames] = useState([]);
+  const [NamesData, setNamesData] = useState([]);
 
-  const [message, setMessage] = useState("Loading")
-
+  // Fetch brand names from the first API
   useEffect(() => {
-    fetch("http://localhost:8080/name").then(
-      response => response.json()
-    ).then(
-      data => {
-        console.log(data)
-        setMessage(data.message)
-      }
-    )
-  }, [])
+    fetch("http://localhost:8080/brandnames")
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setBrandNames(data); // Assuming data is an array of objects with `id` and `name` properties
+      });
+  }, []);
 
+  // Fetch other data from the second API
+  useEffect(() => {
+    fetch("http://localhost:8080/names")
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setNamesData(data); // Assuming data is an array or object with required data
+      });
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
       <header className="text-white py-4 px-6 md:px-8 lg:px-10" style={{ backgroundColor: "#0b4251" }}>
         <div className="container mx-auto flex items-center justify-between">
           <Link className="text-xl font-bold" href="#">
-            Course Comparison {message}
+            Course Scanner
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
             <Link href="#about">About</Link>
@@ -64,18 +72,11 @@ const Component = () => {
                     defaultValue="" // Set the default value as needed
                   >
                     <option value="" disabled>Select Brand Name</option>
-                    <option value="brand2">ROI</option>
-                    <option value="brand3">EC-COUNCIL</option>
-                    <option value="brand4">Fastlane</option>
-                    <option value="brand5">GK</option>
-                    <option value="brand6">Jellyfish</option>
-                    <option value="brand7">Learning Tree</option>
-                    <option value="brand8">Netcom Learning</option>
-                    <option value="brand9">New Horizon</option>
-                    <option value="brand10">Nterone</option>
-                    <option value="brand11">QA</option>
-                    <option value="brand12">Sunset Learning Institute</option>
-
+                    {brandNames.map(option => (
+                      <option key={option.id} value={option.brandname}>
+                        {option.brandname}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
@@ -84,30 +85,24 @@ const Component = () => {
                   <label htmlFor="course-name" className="text-sm" style={{ fontWeight: "bold" }}>
                     Course Name
                   </label>
+
                   <select
-                    id="course-name"
+                    id="brand-name"
                     className="w-full bg-transparent focus:outline-none"
                     defaultValue="" // Set the default value as needed
                   >
                     <option value="" disabled>Select Course Name</option>
-                    <option value="course1">ROI</option>
-                    <option value="course2">EC-COUNCIL</option>
-                    <option value="course3">Fastlane</option>
-                    <option value="course4">GK</option>
-                    <option value="course5">Jellyfish</option>
-                    <option value="course6">Learning Tree</option>
-                    <option value="course7">Netcom Learning</option>
-                    <option value="course8">New Horizon</option>
-                    <option value="course9">Nterone</option>
-                    <option value="course10">QA</option>
-                    <option value="course11">Sunset Learning Institute</option>
-
+                    {NamesData.map(option => (
+                      <option key={option.id} value={option.name}>
+                        {option.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
                   <label htmlFor="start-date" className="text-sm" style={{ fontWeight: "bold" }}>
-                    Start Date
+                    Preferred date
                   </label>
                   <input
                     id="start-date"
@@ -115,13 +110,7 @@ const Component = () => {
                     className="w-full bg-transparent focus:outline-none"
                   />
                 </div>
-                <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
-                <div className="flex flex-col w-full md:w-auto">
-                  <label htmlFor="end-date" className="text-sm" style={{ fontWeight: "bold" }}>
-                    End Date
-                  </label>
-                  <input id="end-date" type="date" placeholder="Add date" className="w-full bg-transparent focus:outline-none" />
-                </div>
+                
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
                   <label htmlFor="region-name" className="text-sm" style={{ fontWeight: "bold" }}>
