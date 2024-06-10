@@ -106,7 +106,7 @@ const Component = () => {
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
-                  <label htmlFor="start-date" className="text-sm bold">
+                  <label htmlFor="start-date" className="text-sm" style={{ fontWeight: "bold" }}>
                     Start Date
                   </label>
                   <input
