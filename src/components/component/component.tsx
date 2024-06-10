@@ -15,22 +15,22 @@ interface BrandName {
   brandname: string;
 }
 
-interface CourseName {
+interface Course {
   id: number;
   name: string;
 }
 
 
 const Component: React.FC = () => {
-  const [brandNames, setBrandNames] = useState([]);
-  const [selectedBrandName, setSelectedBrandName] = useState('');
-  const [courseNames, setCourseNames] = useState([]);
+  const [brandNames, setBrandNames] = useState<string[]>([]);
+  const [selectedBrandName, setSelectedBrandName] = useState<string>('');
+  const [courseNames, setCourseNames] = useState<Course[]>([]);
 
   // Fetch brand names from backend
   useEffect(() => {
     fetch(`${BASE_URL}/brandnames`)
       .then(response => response.json())
-      .then(data => {
+      .then((data: BrandName[]) => {
         setBrandNames(data.map(item => item.brandname));
       })
       .catch(error => {
@@ -43,7 +43,7 @@ const Component: React.FC = () => {
     if (selectedBrandName) {
       fetch(`${BASE_URL}/names/${selectedBrandName}`)
         .then(response => response.json())
-        .then(data => {
+        .then((data: Course[]) => {
           setCourseNames(data.map(item => ({ id: item.id, name: item.name })));
         })
         .catch(error => {
@@ -54,10 +54,9 @@ const Component: React.FC = () => {
     }
   }, [selectedBrandName]);
 
-  const handleBrandNameChange = (event) => {
+  const handleBrandNameChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedBrandName(event.target.value);
   };
-
 
   return (
     <div className="flex flex-col min-h-screen">
