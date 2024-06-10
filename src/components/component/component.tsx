@@ -11,8 +11,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 export const BASE_URL = "http://localhost:8080";
 
+interface BrandName {
+  brandname: string;
+}
 
-const Component = () => {
+interface CourseName {
+  id: number;
+  name: string;
+}
+
+
+const Component: React.FC = () => {
   const [brandNames, setBrandNames] = useState([]);
   const [selectedBrandName, setSelectedBrandName] = useState('');
   const [courseNames, setCourseNames] = useState([]);
