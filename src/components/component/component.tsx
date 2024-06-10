@@ -12,27 +12,41 @@ import { Input } from "@/components/ui/input";
 
 const Component = () => {
   const [brandNames, setBrandNames] = useState([]);
-  const [NamesData, setNamesData] = useState([]);
+  const [selectedBrandName, setSelectedBrandName] = useState('');
+  const [courseNames, setCourseNames] = useState([]);
 
-  // Fetch brand names from the first API
+  // Fetch brand names from backend
   useEffect(() => {
     fetch("http://localhost:8080/brandnames")
       .then(response => response.json())
       .then(data => {
-        console.log(data);
-        setBrandNames(data); // Assuming data is an array of objects with `id` and `name` properties
+        setBrandNames(data.map(item => item.brandname));
+      })
+      .catch(error => {
+        console.error('Error fetching brand names:', error);
       });
   }, []);
 
-  // Fetch other data from the second API
+  // Fetch course names based on selected brand name
   useEffect(() => {
-    fetch("http://localhost:8080/names")
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        setNamesData(data); // Assuming data is an array or object with required data
-      });
-  }, []);
+    if (selectedBrandName) {
+      fetch(`http://localhost:8080/names/${selectedBrandName}`)
+        .then(response => response.json())
+        .then(data => {
+          setCourseNames(data.map(item => ({ id: item.id, name: item.name })));
+        })
+        .catch(error => {
+          console.error('Error fetching course names:', error);
+        });
+    } else {
+      setCourseNames([]);
+    }
+  }, [selectedBrandName]);
+
+  const handleBrandNameChange = (event) => {
+    setSelectedBrandName(event.target.value);
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -69,30 +83,30 @@ const Component = () => {
                   <select
                     id="brand-name"
                     className="w-full bg-transparent focus:outline-none"
-                    defaultValue="" // Set the default value as needed
+                    value={selectedBrandName}
+                    onChange={handleBrandNameChange}
                   >
-                    <option value="" disabled>Select Brand Name</option>
-                    {brandNames.map(option => (
-                      <option key={option.id} value={option.brandname}>
-                        {option.brandname}
+                    <option value="">Select Brand Name</option>
+                    {brandNames.map((brandName, index) => (
+                      <option key={index} value={brandName}>
+                        {brandName}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
-                {/* <ArrowRightIcon className="self-center h-6 w-6 text-gray-400 hidden md:block" /> */}
                 <div className="flex flex-col gap-2 w-full md:w-auto">
                   <label htmlFor="course-name" className="text-sm" style={{ fontWeight: "bold" }}>
                     Course Name
                   </label>
 
                   <select
-                    id="brand-name"
+                    id="course-name"
                     className="w-full bg-transparent focus:outline-none"
-                    defaultValue="" // Set the default value as needed
+                    defaultValue=""
                   >
                     <option value="" disabled>Select Course Name</option>
-                    {NamesData.map(option => (
+                    {courseNames.map(option => (
                       <option key={option.id} value={option.name}>
                         {option.name}
                       </option>
@@ -110,7 +124,7 @@ const Component = () => {
                     className="w-full bg-transparent focus:outline-none"
                   />
                 </div>
-                
+
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
                   <label htmlFor="region-name" className="text-sm" style={{ fontWeight: "bold" }}>
