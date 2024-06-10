@@ -1,20 +1,37 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { CardContent, Card } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { MenuIcon } from "lucide-react"
-import { ArrowRightIcon } from "lucide-react"
-import Image from 'next/image';
+"use client";
 
-export function Component() {
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
+import Link from "next/link";
+import { CardContent, Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { MenuIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const Component = () => {
+
+  const [message, setMessage] = useState("Loading")
+
+  useEffect(() => {
+    fetch("http://localhost:8080/name").then(
+      response => response.json()
+    ).then(
+      data => {
+        console.log(data)
+        setMessage(data.message)
+      }
+    )
+  }, [])
+
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="text-white py-4 px-6 md:px-8 lg:px-10" style={{ backgroundColor: "#0b4251" }}>
         <div className="container mx-auto flex items-center justify-between">
           <Link className="text-xl font-bold" href="#">
-            Course Comparison
+            Course Comparison {message}
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
             <Link href="#about">About</Link>
@@ -49,15 +66,15 @@ export function Component() {
                     <option value="" disabled>Select Brand Name</option>
                     <option value="brand2">ROI</option>
                     <option value="brand3">EC-COUNCIL</option>
-                    <option value="brand3">Fastlane</option>
-                    <option value="brand3">GK</option>
-                    <option value="brand3">Jellyfish</option>
-                    <option value="brand3">Learning Tree</option>
-                    <option value="brand3">Netcom Learning</option>
-                    <option value="brand3">New Horizon</option>
-                    <option value="brand3">Nterone</option>
-                    <option value="brand3">QA</option>
-                    <option value="brand3">Sunset Learning Institute</option>
+                    <option value="brand4">Fastlane</option>
+                    <option value="brand5">GK</option>
+                    <option value="brand6">Jellyfish</option>
+                    <option value="brand7">Learning Tree</option>
+                    <option value="brand8">Netcom Learning</option>
+                    <option value="brand9">New Horizon</option>
+                    <option value="brand10">Nterone</option>
+                    <option value="brand11">QA</option>
+                    <option value="brand12">Sunset Learning Institute</option>
 
                   </select>
                 </div>
@@ -67,13 +84,25 @@ export function Component() {
                   <label htmlFor="course-name" className="text-sm" style={{ fontWeight: "bold" }}>
                     Course Name
                   </label>
-                  <input
+                  <select
                     id="course-name"
-                    type="text"
                     className="w-full bg-transparent focus:outline-none"
-                    placeholder="Enter Course Name"
+                    defaultValue="" // Set the default value as needed
+                  >
+                    <option value="" disabled>Select Course Name</option>
+                    <option value="course1">ROI</option>
+                    <option value="course2">EC-COUNCIL</option>
+                    <option value="course3">Fastlane</option>
+                    <option value="course4">GK</option>
+                    <option value="course5">Jellyfish</option>
+                    <option value="course6">Learning Tree</option>
+                    <option value="course7">Netcom Learning</option>
+                    <option value="course8">New Horizon</option>
+                    <option value="course9">Nterone</option>
+                    <option value="course10">QA</option>
+                    <option value="course11">Sunset Learning Institute</option>
 
-                  />
+                  </select>
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
@@ -98,12 +127,16 @@ export function Component() {
                   <label htmlFor="region-name" className="text-sm" style={{ fontWeight: "bold" }}>
                     Region
                   </label>
-                  <input
+                  <select
                     id="region-name"
-                    type="text"
                     className="w-full bg-transparent focus:outline-none"
-                    placeholder="Enter Region Name"
-                  />
+                    defaultValue="" // Set the default value as needed
+                  >
+                    <option value="" disabled>Select Region Name</option>
+                    <option value="region1">UK</option>
+                    <option value="region2">USA</option>
+
+                  </select>
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <button className="bg-[#0b4251] px-4 py-2 text-white w-full md:w-auto" style={{ fontWeight: "bold", borderRadius: "12px" }}>Search</button>
@@ -305,3 +338,5 @@ export function Component() {
     </div>
   )
 }
+
+export default Component
