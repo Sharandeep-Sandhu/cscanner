@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-export const BASE_URL = "http://localhost:8080";
 
 interface BrandName {
   brandname: string;
@@ -17,20 +16,21 @@ interface BrandName {
 
 interface Course {
   id: number;
-  name: string;
+  coursename: string;
 }
 
-
 const Component: React.FC = () => {
+  const BASE_URL = 'http://localhost:8080';
   const [brandNames, setBrandNames] = useState<string[]>([]);
   const [selectedBrandName, setSelectedBrandName] = useState<string>('');
   const [courseNames, setCourseNames] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
 
-  // Fetch brand names from backend
   useEffect(() => {
+    // Fetch brand names from backend
     fetch(`${BASE_URL}/brandnames`)
       .then(response => response.json())
-      .then((data: BrandName[]) => {
+      .then((data: { brandname: string }[]) => {
         setBrandNames(data.map(item => item.brandname));
       })
       .catch(error => {
@@ -38,13 +38,16 @@ const Component: React.FC = () => {
       });
   }, []);
 
-  // Fetch course names based on selected brand name
   useEffect(() => {
+    // Fetch course names based on selected brand name
     if (selectedBrandName) {
-      fetch(`${BASE_URL}/names/${selectedBrandName}`)
+      fetch(`${BASE_URL}/coursename/${selectedBrandName}`)
         .then(response => response.json())
         .then((data: Course[]) => {
-          setCourseNames(data.map(item => ({ id: item.id, name: item.name })));
+          // Use a Set to filter out duplicate course names
+          const uniqueCourses = Array.from(new Set(data.map(item => item.coursename)))
+            .map(name => data.find(course => course.coursename === name));
+          setCourseNames(uniqueCourses as Course[]);
         })
         .catch(error => {
           console.error('Error fetching course names:', error);
@@ -56,6 +59,30 @@ const Component: React.FC = () => {
 
   const handleBrandNameChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedBrandName(event.target.value);
+  };
+
+  const handleCourseNameChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = parseInt(event.target.value, 10);
+    setSelectedCourseId(selectedId);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = {
+      brandname: selectedBrandName,
+      courseid: selectedCourseId?.toString() || '',
+      start_date: (e.currentTarget.querySelector('input[name="start-date"]') as HTMLInputElement)?.value || '',
+      region: (e.currentTarget.querySelector('select[name="region"]') as HTMLSelectElement)?.value || '',
+    };
+
+    const queryString = new URLSearchParams(formData).toString();
+    const url = `/search?${queryString}`;
+
+    // Redirect to the constructed URL
+    window.location.href = url;
+
+    console.log('Form submitted:', formData);
   };
 
   return (
@@ -85,13 +112,16 @@ const Component: React.FC = () => {
             <p className="text-lg md:text-xl text-white-600 mb-8" style={{ textAlign: "center" }}>Compare course prices across multiple websites and find the best deal.</p>
 
             <div className="text-white" style={{ padding: "6rem" }}>
-              <div className="mt-4 flex flex-col md:flex-row bg-white justify-between p-2 text-black rounded space-y-4 md:space-y-0">
+              <form
+                className="mt-4 flex flex-col md:flex-row bg-white justify-between p-2 text-black rounded space-y-4 md:space-y-0"
+                onSubmit={handleSubmit}
+              >
                 <div className="flex flex-col w-full md:w-auto">
-                  <label htmlFor="brand-name" className="text-sm" style={{ fontWeight: "bold" }}>
+                  <label htmlFor="brandname" className="text-sm" style={{ fontWeight: 'bold' }}>
                     Brand Name
                   </label>
                   <select
-                    id="brand-name"
+                    id="brandname"
                     className="w-full bg-transparent focus:outline-none"
                     value={selectedBrandName}
                     onChange={handleBrandNameChange}
@@ -106,54 +136,63 @@ const Component: React.FC = () => {
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col gap-2 w-full md:w-auto">
-                  <label htmlFor="course-name" className="text-sm" style={{ fontWeight: "bold" }}>
+                  <label htmlFor="coursename" className="text-sm" style={{ fontWeight: 'bold' }}>
                     Course Name
                   </label>
-
                   <select
-                    id="course-name"
+                    id="coursename"
                     className="w-full bg-transparent focus:outline-none"
-                    defaultValue=""
+                    value={selectedCourseId?.toString() || ''}
+                    onChange={handleCourseNameChange}
                   >
-                    <option value="" disabled>Select Course Name</option>
+                    <option value="" disabled>
+                      Select Course Name
+                    </option>
                     {courseNames.map(option => (
-                      <option key={option.id} value={option.name}>
-                        {option.name}
+                      <option key={option.id} value={option.id.toString()}>
+                        {option.coursename}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
-                  <label htmlFor="start-date" className="text-sm" style={{ fontWeight: "bold" }}>
-                    Preferred date
+                  <label htmlFor="start-date" className="text-sm" style={{ fontWeight: 'bold' }}>
+                    Preferred Date
                   </label>
                   <input
                     id="start-date"
+                    name="start-date"
                     type="date"
                     className="w-full bg-transparent focus:outline-none"
                   />
                 </div>
-
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
-                  <label htmlFor="region-name" className="text-sm" style={{ fontWeight: "bold" }}>
+                  <label htmlFor="region" className="text-sm" style={{ fontWeight: 'bold' }}>
                     Region
                   </label>
                   <select
-                    id="region-name"
+                    id="region"
+                    name="region"
                     className="w-full bg-transparent focus:outline-none"
-                    defaultValue="" // Set the default value as needed
                   >
-                    <option value="" disabled>Select Region Name</option>
-                    <option value="region1">UK</option>
-                    <option value="region2">USA</option>
-
+                    <option value="" disabled>
+                      Select Region Name
+                    </option>
+                    <option value="UK">UK</option>
+                    <option value="USA">USA</option>
                   </select>
                 </div>
                 <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
-                <button className="bg-[#0b4251] px-4 py-2 text-white w-full md:w-auto" style={{ fontWeight: "bold", borderRadius: "12px" }}>Search</button>
-              </div>
+                <button
+                  className="bg-[#0b4251] px-4 py-2 text-white w-full md:w-auto"
+                  style={{ fontWeight: 'bold', borderRadius: '12px' }}
+                  type="submit"
+                >
+                  Search
+                </button>
+              </form>
             </div>
           </div>
         </section>
