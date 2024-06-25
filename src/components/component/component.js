@@ -30,6 +30,7 @@ const Component = () => {
   const [priceFilter, setPriceFilter] = useState("");
   const [durationFilter, setDurationFilter] = useState("");
   const [titleFilter, setTitleFilter] = useState("");
+  const [dateSortOrder, setDateSortOrder] = useState("");
   const [courses, setCourses] = useState([]);
 
   useEffect(() => {
@@ -77,7 +78,7 @@ const Component = () => {
     const formData = {
       brandname: selectedBrandName,
       course_id: selectedCourseId,
-      start_date: e.currentTarget.querySelector('input[name="start-date"]')?.value || '',
+      start_date: e.currentTarget.querySelector('input[name="start_date"]')?.value || '',
       region: e.currentTarget.querySelector('select[name="region"]')?.value || '',
     };
 
@@ -115,16 +116,24 @@ const Component = () => {
   }, []);
 
   useEffect(() => {
-    // Simulating search results based on filters
-    const filteredResults = courses.filter((course) => {
+    let filteredResults = [...courses].filter((course) => {
       const title = course.coursename || ""; // Handle null or undefined coursename
       const titleMatch = title.toLowerCase().includes(titleFilter.toLowerCase());
       const priceMatch = priceFilter ? course.price <= parseFloat(priceFilter) : true;
       const durationMatch = durationFilter ? course.duration === durationFilter : true;
       return titleMatch && priceMatch && durationMatch;
     });
+
+    if (dateSortOrder) {
+      filteredResults.sort((a, b) => {
+        const dateA = new Date(a.start_date);
+        const dateB = new Date(b.start_date);
+        return dateSortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      });
+    }
+
     setSearchResults(filteredResults);
-  }, [courses, titleFilter, priceFilter, durationFilter]);
+  }, [courses, titleFilter, priceFilter, durationFilter, dateSortOrder]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -136,7 +145,6 @@ const Component = () => {
           <nav className="hidden md:flex items-center space-x-6">
             <Link href="#about">About</Link>
             <Link href="#courses">Courses</Link>
-            <Link href="#contact">Contact</Link>
           </nav>
           <Button className="md:hidden" variant="outline">
             <MenuIcon className="w-6 h-6" />
@@ -147,6 +155,37 @@ const Component = () => {
         height: '100vh',
         background: 'linear-gradient(to top, #87bbd7, #f2c864, #0b4251)'
       }}>
+        <section className="py-12 px-6 md:px-8 lg:px-10" id="about">
+          <div className="container mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <p className="text-White-600 mb-4" style={{ fontSize: '25px' }}>
+                  Course Comparison is a platform that helps you find the best deals on online courses across multiple
+                  websites. We understand that finding the right course at the right price can be a daunting task, so
+                  we have created this tool to make the process easier.
+                </p>
+                <p className="text-white-600 mb-4" style={{ fontSize: '20px' }}>
+                  Our mission is to empower learners like you to access high-quality education at affordable prices. By
+                  comparing course prices from various platforms, we aim to help you make informed decisions and get the
+                  most value for your money.
+                </p>
+              </div>
+              <div>
+                <Image
+                  alt="About Image"
+                  className="rounded-md"
+                  height={300}
+                  src="/placeholder.svg"
+                  style={{
+                    aspectRatio: "500/300",
+                    objectFit: "cover",
+                  }}
+                  width={500}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
         <section className="py-12 px-6 md:px-8 lg:px-10">
           <div className="container mx-auto">
             <h1 className="text-3xl md:text-6xl font-bold mb-4" style={{ textAlign: "center" }}>Find the Best Courses Price</h1>
@@ -158,14 +197,15 @@ const Component = () => {
                 onSubmit={handleSubmit}
               >
                 <div className="flex flex-col w-full md:w-auto">
-                  <label htmlFor="brandname" className="text-sm" style={{ fontWeight: 'bold' }}>
+                  <label htmlFor="brand-name" className="text-sm" style={{ fontWeight: 'bold' }}>
                     Brand Name
                   </label>
                   <select
-                    id="brandname"
-                    className="w-full bg-transparent focus:outline-none"
+                    id="brand-name"
+                    name="brand-name"
                     value={selectedBrandName}
                     onChange={handleBrandNameChange}
+                    className="w-full bg-transparent focus:outline-none"
                   >
                     <option value="">Select Brand Name</option>
                     {brandNames.map((brandName, index) => (
@@ -175,40 +215,36 @@ const Component = () => {
                     ))}
                   </select>
                 </div>
-                <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
-                <div className="flex flex-col gap-2 w-full md:w-auto">
-                  <label htmlFor="coursename" className="text-sm" style={{ fontWeight: 'bold' }}>
+                <div className="flex flex-col w-full md:w-auto">
+                  <label htmlFor="course-name" className="text-sm" style={{ fontWeight: 'bold' }}>
                     Course Name
                   </label>
                   <select
-                    id="coursename"
-                    className="w-full bg-transparent focus:outline-none"
+                    id="course-name"
+                    name="course-name"
                     value={selectedCourseId}
                     onChange={handleCourseNameChange}
+                    className="w-full bg-transparent focus:outline-none"
                   >
                     <option value="">Select Course Name</option>
-                    {courseNames.map(option => (
-                      <option key={option.course_id} value={option.course_id.toString()}>
-                        {option.coursename}
+                    {courseNames.map((course, index) => (
+                      <option key={index} value={course.course_id}>
+                        {course.coursename}
                       </option>
                     ))}
                   </select>
                 </div>
-                <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
-                  <label htmlFor="start-date" className="text-sm" style={{ fontWeight: 'bold' }}>
-                    Preferred Date
+                  <label htmlFor="start_date" className="text-sm font-bold">
+                    Start Date
                   </label>
                   <input
-                    id="start-date"
-                    name="start-date"
-                    type="text"
-                    pattern="\d{1,2}-\d{1,2}-\d{4}"
-                    placeholder="dd-mm-yyyy"
+                    id="start_date"
+                    name="start_date"
+                    type="date"
                     className="w-full bg-transparent focus:outline-none"
                   />
                 </div>
-                <div className="border-l border-gray-300 mx-4 hidden md:block"></div>
                 <div className="flex flex-col w-full md:w-auto">
                   <label htmlFor="region" className="text-sm" style={{ fontWeight: 'bold' }}>
                     Region
@@ -232,9 +268,7 @@ const Component = () => {
                   Search
                 </button>
               </form>
-
             </div>
-
 
             {searchResults.length > 0 && (
               <div className="container mx-auto grid md:grid-cols-[240px_1fr] gap-8 py-8 px-4 md:px-6">
@@ -263,16 +297,18 @@ const Component = () => {
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Price filter input */}
+                    {/* Date filter select */}
                     <div className="grid gap-2">
-                      <Label htmlFor="price-filter">Price</Label>
-                      <Input
-                        id="price-filter"
-                        type="number"
-                        placeholder="Filter by price"
-                        value={priceFilter}
-                        onChange={(e) => setPriceFilter(e.target.value)}
-                      />
+                      <Label htmlFor="date-filter">Date</Label>
+                      <Select id="date-filter" value={dateSortOrder} onValueChange={setDateSortOrder}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Sort by date" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="asc">Date: Ascending</SelectItem>
+                          <SelectItem value="desc">Date: Descending</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Duration filter select */}
@@ -312,7 +348,7 @@ const Component = () => {
                   <h2 className="text-2xl font-bold mb-4">Search Results</h2>
                   <ul className="grid grid-cols-1 gap-6">
                     {searchResults.map((course) => (
-                      <li key={course.id} className="shadow-md rounded-lg p-4" style={{ backgroundColor:'#030712' }}>
+                      <li key={course.id} className="shadow-md rounded-lg p-4" style={{ backgroundColor: '#030712' }}>
                         <div className="grid md:grid-cols-[1fr_auto] gap-4">
                           <div>
                             <h3 className="text-lg font-semibold">{course.coursename}</h3>
@@ -340,11 +376,6 @@ const Component = () => {
               </div>
             )}
 
-
-
-
-
-
           </div>
         </section>
       </main>
@@ -358,7 +389,6 @@ const Component = () => {
 };
 
 export default Component;
-
 
 function CalendarIcon(props) {
   return (
