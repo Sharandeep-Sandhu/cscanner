@@ -345,7 +345,7 @@ const Component = () => {
 
                 {/* Displaying search results in list format */}
                 <div className="mt-8">
-                  <h2 className="text-2xl font-bold mb-4">Search Results</h2>
+                  <h2 className="text-2xl font-bold mb-4">All Courses</h2>
                   <ul className="grid grid-cols-1 gap-6">
                     {searchResults.map((course) => (
                       <li key={course.id} className="shadow-md rounded-lg p-4" style={{ backgroundColor: '#030712' }}>
