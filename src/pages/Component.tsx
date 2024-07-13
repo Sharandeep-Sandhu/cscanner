@@ -42,10 +42,9 @@ export function Component() {
     const [today, setToday] = useState('');
 
     useEffect(() => {
-        // Fetch brand names from backend
         fetch(`${BASE_URL}/brandnames`)
             .then(response => response.json())
-            .then(data => setBrandNames(data.map(item => item.brandname)))
+            .then((data: BrandName[]) => setBrandNames(data.map(item => item.brandname)))
             .catch(error => console.error('Error fetching brand names:', error));
     }, []);
 
