@@ -8,7 +8,7 @@ function Navbar() {
             <div className="mx-auto flex items-center justify-between space-x-2">
                 <Link href="/" className="font-bold text-3xl flex items-center">
                     <Image
-                        src="/logo/logo1.png"
+                        src="/Logo1.png"
                         alt="Logo"
                         width={200}
                         height={200}
