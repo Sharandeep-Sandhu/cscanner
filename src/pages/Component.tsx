@@ -34,10 +34,12 @@ export function Component() {
     const [selectedCourseId, setSelectedCourseId] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showPopup, setShowPopup] = useState(false);
-    const [topCourses, setTopCourses] = useState([]); // State for top courses
     const router = useRouter();
+    const [topCourses, setTopCourses] = useState<Course[]>([]);
     const [brandNames, setBrandNames] = useState<string[]>([]);
-    const [selectedBrandName, setSelectedBrandName] = useState<string | null>(null);
+    // const [selectedBrandName, setSelectedBrandName] = useState<string | null>(null);
+    const [selectedBrandName, setSelectedBrandName] = useState<string>('');
+
     const [courseNames, setCourseNames] = useState<Course[]>([]);
     const [today, setToday] = useState('');
 
@@ -48,6 +50,7 @@ export function Component() {
             .catch(error => console.error('Error fetching brand names:', error));
     }, []);
 
+
     useEffect(() => {
         // Fetch course names based on selected brand name
         if (selectedBrandName) {
@@ -55,8 +58,15 @@ export function Component() {
                 .then(response => response.json())
                 .then((data: Course[]) => {
                     const uniqueCourses = Array.from(new Set(data.map((item: Course) => item.coursename)))
-                        .map(name => data.find(course => course.coursename === name));
-                    setCourseNames(uniqueCourses);
+                        .map(name => data.find(course => course.coursename === name))
+                        .filter((course): course is Course => course !== undefined); // Filter out undefined values and assert type
+
+                    // Sort courses by start_date
+                    const sortedCourses = uniqueCourses.sort((a, b) => {
+                        return new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
+                    });
+
+                    setCourseNames(sortedCourses);
                 })
                 .catch(error => console.error('Error fetching course names:', error));
         } else {
@@ -65,47 +75,59 @@ export function Component() {
     }, [selectedBrandName]);
 
 
+
     useEffect(() => {
         const todayDate = new Date().toISOString().split('T')[0];
         setToday(todayDate);
     }, []);
+
 
     useEffect(() => {
         fetch(`${BASE_URL}/topcourses`)
             .then(response => response.json())
             .then(data => {
                 // Sort courses by start_date
-                const sortedCourses = data.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+                
+                const sortedCourses = data.sort((a: { start_date: string }, b: { start_date: string }) => {
+                    return new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
+                });
                 setTopCourses(sortedCourses);
+                
             })
             .catch(error => console.error('Error fetching top courses:', error));
     }, []);
 
-    // Debugging output to check topCourses data
     useEffect(() => {
-        console.log('Top Courses:', topCourses);
+        console.log('Top Courses:', topCourses); // Debugging output
     }, [topCourses]);
 
-    const handleBrandNameChange = (event) => {
+
+
+
+    const handleBrandNameChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedBrandName(event.target.value);
         setSelectedCourseId(''); // Reset course selection when brand changes
     };
 
-    const handleCourseNameChange = (event) => setSelectedCourseId(event.target.value);
+
+
+    const handleCourseNameChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedCourseId(event.target.value);
+    };
 
 
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const formData = {
             brandname: selectedBrandName,
             course_id: selectedCourseId,
-            start_date: e.currentTarget.querySelector('input[name="start_date"]')?.value || '',
-            region: e.currentTarget.querySelector('select[name="region"]')?.value || '',
+            start_date: (e.currentTarget.querySelector('input[name="start_date"]') as HTMLInputElement)?.value || '',
+            region: (e.currentTarget.querySelector('select[name="region"]') as HTMLSelectElement)?.value || '',
         };
 
-        const queryString = new URLSearchParams(formData).toString();
+        const queryString = new URLSearchParams(formData as Record<string, string>).toString();
         const url = `${BASE_URL}/search?${queryString}`;
 
         try {
@@ -124,6 +146,8 @@ export function Component() {
             setShowPopup(true); // Show popup for errors
         }
     };
+
+
 
     return (
         <div className="flex flex-col min-h-screen mt-10">
@@ -253,16 +277,15 @@ export function Component() {
                     {topCourses.slice(0, 6).map((course, index) => (
                         <div key={index} className="w-full md:w-1/3 p-4">
                             <Card className="h-full">
-                                <CardContent className='mt-5'>
+                                <CardContent>
                                     <h2 className="text-xl font-bold">{course.coursename.substring(0, course.coursename.indexOf(')') + 1)}</h2>
-
-
                                     <br />
                                     <p className="text-sm text-gray-600 font-bold">Technology: {course.brandname}</p>
                                     <p className="text-sm text-gray-600 font-bold">Price: ${course.price}</p>
                                     <p className="text-sm text-gray-600 font-bold">Region: {course.region}</p>
-                                    <p className="text-sm text-gray-600 font-bold">Region: {course.duration}</p>
-                                    <p className="text-sm text-gray-600 font-bold">Start Date: {new Date(course.start_date).toLocaleDateString('en-GB')}</p>
+                                    <p className="text-sm text-gray-600 font-bold">Duration: {course.duration}</p>
+                                    <p className="text-sm text-gray-600 font-bold">Start Date: {course.start_date}</p>
+                                    
                                     <br />
                                     <Link href={course.url} className='font-bold flex items-center'>
                                         <span className="text-[#ddbd48] flex items-center">
@@ -272,8 +295,6 @@ export function Component() {
                                             </svg>
                                         </span>
                                     </Link>
-
-
                                 </CardContent>
                             </Card>
                         </div>

@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../searchcourse.js", "src/components/component/search.js", "../component.tsx", "pages/index.js", "src/pages/courses/courses.js", "src/pages/Component.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../searchcourse.js", "src/components/component/search.js", "../component.tsx", "pages/index.js", "../courses/courses.js", "src/pages/Component.tsx"],
   "exclude": ["node_modules", ".next"]
 }

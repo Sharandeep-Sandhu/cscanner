@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -18,6 +20,11 @@ interface Course {
     brand_image: string;
     url: string;
     course_id: string;
+}
+
+interface SearchComponentProps {
+    setCourses: React.Dispatch<React.SetStateAction<Course[]>>;
+    setFilteredCourses: React.Dispatch<React.SetStateAction<Course[]>>;
 }
 
 function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -39,15 +46,9 @@ function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
     );
 }
 
-export default function CoursesPage() {
+function SearchComponent({ setCourses, setFilteredCourses }: SearchComponentProps) {
     const BASE_URL = 'http://localhost:8080';
-    const router = useRouter();
     const searchParams = useSearchParams();
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-    const [selectedPriceOrder, setSelectedPriceOrder] = useState<string | undefined>(undefined);
-    const [selectedDateOrder, setSelectedDateOrder] = useState<string | undefined>(undefined);
-    const [selectedRegion, setSelectedRegion] = useState<string>('all');
 
     useEffect(() => {
         async function fetchCourses() {
@@ -105,7 +106,17 @@ export default function CoursesPage() {
         if (searchParams && searchParams.toString()) {
             fetchCourses();
         }
-    }, [searchParams]);
+    }, [searchParams, setCourses, setFilteredCourses]);
+
+    return null;
+}
+
+export default function CoursesPage() {
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+    const [selectedPriceOrder, setSelectedPriceOrder] = useState<string | undefined>(undefined);
+    const [selectedDateOrder, setSelectedDateOrder] = useState<string | undefined>(undefined);
+    const [selectedRegion, setSelectedRegion] = useState<string>('all');
 
     const applyFilters = () => {
         let filtered = [...courses];
@@ -132,10 +143,12 @@ export default function CoursesPage() {
                         filteredCourses.map(course => (
                             <div key={course.course_id} className="w-72 bg-card rounded-lg overflow-hidden shadow-md bg-[#18181b]">
                                 <div className="h-48">
-                                    <img
+                                    <Image
                                         src={course.brand_image}
                                         alt={course.brandname}
-                                        className="h-full w-full object-cover"
+                                        width={500} // Replace with your desired width
+                                        height={300} // Replace with your desired height
+                                        objectFit="cover" // Adjust as needed, e.g., "contain", "fill", etc.
                                     />
                                 </div>
                                 <div className="p-6">
@@ -218,6 +231,9 @@ export default function CoursesPage() {
                     <Button className="w-full" onClick={applyFilters}>Apply Filters</Button>
                 </div>
             </div>
+            <Suspense fallback={<div>Loading...</div>}>
+                <SearchComponent setCourses={setCourses} setFilteredCourses={setFilteredCourses} />
+            </Suspense>
         </div>
     );
 }
